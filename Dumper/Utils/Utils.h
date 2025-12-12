@@ -675,8 +675,27 @@ inline T* FindAlignedValueInProcess(T Value, const std::string& Sectionname = ".
 
 		if (SectionStart != 0x0 && SectionSize != 0x0)
 		{
-			SearchStart = SectionStart;
-			SearchRange = SectionSize;
+			bool bReadable = false;
+			for (const auto& Sec : GetAllSections(ImageBase))
+			{
+				uintptr_t SecStart = ImageBase + Sec.VirtualAddress;
+				if (SecStart == SectionStart)
+				{
+					if ((Sec.Characteristics & IMAGE_SCN_MEM_READ) && Sec.Misc.VirtualSize != 0)
+						bReadable = true;
+					break;
+				}
+			}
+
+			if (bReadable)
+			{
+				SearchStart = SectionStart;
+				SearchRange = SectionSize;
+			}
+			else
+			{
+				bSearchAllSections = true;
+			}
 		}
 		else
 		{
@@ -684,12 +703,17 @@ inline T* FindAlignedValueInProcess(T Value, const std::string& Sectionname = ".
 		}
 	}
 
-	T* Result = FindAlignedValueInProcessInRange(Value, Alignment, SearchStart, SearchRange);
+	if (!bSearchAllSections)
+	{
+		T* Result = FindAlignedValueInProcessInRange(Value, Alignment, SearchStart, SearchRange);
 
-	if (!Result && SearchStart != ImageBase)
-		return FindAlignedValueInProcess(Value, Sectionname, Alignment, true);
+		if (!Result && SearchStart != ImageBase)
+			return FindAlignedValueInProcess(Value, Sectionname, Alignment, true);
 
-	return Result;
+		return Result;
+	}
+
+	return nullptr;
 }
 
 template<bool bShouldResolve32BitJumps = true>
