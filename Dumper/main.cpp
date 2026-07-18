@@ -1,23 +1,9 @@
 #include <Windows.h>
 #include <iostream>
 #include <chrono>
-#include <fstream>
-
-#include "Generators/CppGenerator.h"
-#include "Generators/MappingGenerator.h"
-#include "Generators/IDAMappingGenerator.h"
-#include "Generators/DumpspaceGenerator.h"
 
 #include "Generators/Generator.h"
-
-enum class EFortToastType : uint8
-{
-    Default                                  = 0,
-    Subdued                                  = 1,
-    Impactful                                = 2,
-    Lock                                     = 3,
-    EFortToastType_MAX                       = 4,
-};
+#include "MultiCapture/MultiCapture.h"
 
 DWORD MainThread(HMODULE Module)
 {
@@ -33,54 +19,31 @@ DWORD MainThread(HMODULE Module)
 	Settings::Config::Load();
 	Settings::Config::DelayDumperStart();
 
-	std::cerr << "Started Generation [Dumper-7]!\n";
-	auto DumpStartTime = std::chrono::high_resolution_clock::now();
-
 	Generator::InitEngineCore();
-	Generator::InitInternal();
 
-	if (Settings::Generator::GameName.empty() && Settings::Generator::GameVersion.empty())
-	{
-		// Only Possible in Main()
-		FString Name;
-		FString Version;
-		UEClass Kismet = ObjectArray::FindClassFast("KismetSystemLibrary");
-		UEFunction GetGameName = Kismet.GetFunction("KismetSystemLibrary", "GetGameName");
-		UEFunction GetEngineVersion = Kismet.GetFunction("KismetSystemLibrary", "GetEngineVersion");
+	//if (Settings::Debug::bExecuteSDKTestScript)
+	//{
+	//	/* Executes a python script to test if the SDK compiles correctly. */
+	//	CppGenerator::ExecuteSDKCompilationTestScript();
+	//}
 
-		Kismet.ProcessEvent(GetGameName, &Name);
-		Kismet.ProcessEvent(GetEngineVersion, &Version);
-
-		Settings::Generator::GameName = Name.ToString();
-		Settings::Generator::GameVersion = Version.ToString();
-	}
-
-	std::cerr << "GameName: " << Settings::Generator::GameName << "\n";
-	std::cerr << "GameVersion: " << Settings::Generator::GameVersion << "\n\n";
-
-	std::cerr << "FolderName: " << (Settings::Generator::GameVersion + '-' + Settings::Generator::GameName) << "\n\n";
-
-	Generator::Generate<CppGenerator>();
-	Generator::Generate<MappingGenerator>();
-	Generator::Generate<IDAMappingGenerator>();
-	Generator::Generate<DumpspaceGenerator>();
-
-	auto DumpFinishTime = std::chrono::high_resolution_clock::now();
-
-	std::chrono::duration<double, std::milli> DumpTime = DumpFinishTime - DumpStartTime;
-
-	std::cerr << "\n\nGenerating SDK took (" << DumpTime.count() << "ms)\n\n\n";
-
-	if (Settings::Debug::bExecuteSDKTestScript)
-	{
-		/* Executes a python script to test if the SDK compiles correctly. */
-		CppGenerator::ExecuteSDKCompilationTestScript();
-	}
-
-	std::cerr << "\n\nPress F6 to unload\n\n\n";
+	std::cerr << "\n[Dumper-7] Press:\n";
+	std::cerr << "  F4 = Capture current classes (press in each level)\n";
+	std::cerr << "  F5 = Generate SDK from all captured classes\n";
+	std::cerr << "  F6 = Eject\n\n";
 
 	while (true)
 	{
+		if (GetAsyncKeyState(VK_F4) & 1)
+		{
+			MultiCapture::Capture();
+		}
+
+		if (GetAsyncKeyState(VK_F5) & 1)
+		{
+			MultiCapture::Generate();
+		}
+
 		if (GetAsyncKeyState(VK_F6) & 1)
 		{
 			fclose(stderr);

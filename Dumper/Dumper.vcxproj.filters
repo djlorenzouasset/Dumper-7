@@ -81,6 +81,7 @@
       <Filter>Generator\Private\Generators</Filter>
     </ClCompile>
     <ClCompile Include="Generator\Private\SharedPredefinedMembers.cpp" />
+    <ClCompile Include="MultiCapture\MultiCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -269,5 +270,6 @@
       <Filter>Generator\Public\Generators</Filter>
     </ClInclude>
     <ClInclude Include="Generator\Public\SharedPredefinedMembers.h" />
+    <ClInclude Include="MultiCapture\MultiCapture.h" />
   </ItemGroup>
 </Project>

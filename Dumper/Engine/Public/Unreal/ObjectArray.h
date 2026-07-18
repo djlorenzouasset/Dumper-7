@@ -55,6 +55,8 @@ public:
 	template<typename UEType = UEObject>
 	static UEType GetByIndex(int32 Index);
 
+	static void AddObjectToRoot(int32 Index);
+
 	template<typename UEType = UEObject>
 	static UEType FindObject(const std::string& FullName, EClassCastFlags RequiredType = EClassCastFlags::None);
 
