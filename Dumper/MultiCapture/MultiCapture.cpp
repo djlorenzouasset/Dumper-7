@@ -24,8 +24,8 @@ void MultiCapture::Capture()
 		NewCount++;
 	}
 
-	std::cerr << std::format("Captured {} new classes. New rooted count: {}", NewCount, RootedClasses.size());
-	std::cerr << "Press F4 to root new classes or F5 to generate the SDK.";
+	std::cerr << std::format("Captured {} new classes. New rooted count: {}\n", NewCount, RootedClasses.size());
+	std::cerr << "Press F4 to root new classes or F5 to generate the SDK.\n\n";
 }
 
 void MultiCapture::Generate()
